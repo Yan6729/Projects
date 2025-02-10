@@ -1,0 +1,92 @@
+printf("----------------------------------------\n");
+            printf("Tower: Pos: {%.2f, %.2f} Radius: %.2f\n", data->Xt, data->Yt, data->rad);
+       
+printf("------------------------------------------------------------------------------------------------------\n");                               
+            printf("Aircraft n°%d: Pos start: {%.2f, %.2f} Pos end: {%.2f, %2f} Vit: %.2f delay: %.2f\n", data->id, data->Xi, data->Yi, data->X, data->Y, data->vit, data->delay);  
+
+
+if ((tmp_2->Xi <= tmp_2->X) && (tmp_2->Yi <= tmp_2->Y)) {
+                    tmp_2->Xi += (tmp_2->vit / 100);
+                    tmp_2->Yi += (tmp_2->vit / 100);
+                    tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+                    if (collision == false)
+                        draw(plane, rec, window, tab);
+                } else if ((tmp_2->Xi <= tmp_2->X) && (tmp_2->Yi >= tmp_2->Y)) {
+                    tmp_2->Xi += (tmp_2->vit / 100);
+                    tmp_2->Yi -= (tmp_2->vit / 100);
+                    tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+                    if (collision == false)
+                        draw(plane, rec, window, tab);
+                } else if ((tmp_2->Xi >= tmp_2->X) && (tmp_2->Yi <= tmp_2->Y)) {
+                    tmp_2->Xi -= (tmp_2->vit / 100);
+                    tmp_2->Yi += (tmp_2->vit / 100);
+                    tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+                    if (collision == false)
+                        draw(plane, rec, window, tab);
+                } else if ((tmp_2->Xi >= tmp_2->X) && (tmp_2->Yi >= tmp_2->Y - 1)) {
+                    tmp_2->Xi -= (tmp_2->vit / 100);
+                    tmp_2->Yi -= (tmp_2->vit / 100);
+                    tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+                    if (collision == false)
+                        draw(plane, rec, window, tab);
+                }
+
+
+
+
+
+
+
+int *coordonnée(int a, int b, int c)
+{
+    int *plane = malloc(sizeof(int) * 3);
+
+    plane[0] = a;
+    plane[1] = b;
+    plane[2] = c;
+    return plane;
+}
+
+void cond_2(plane_t *tmp_2, int *tab, sfRenderWindow *window, sfRectangleShape *rec, sfSprite *plane)
+{
+    if ((tmp_2->Xi >= tmp_2->X) && (tmp_2->Yi <= tmp_2->Y)) {
+        tmp_2->Xi -= (tmp_2->vit / 100);
+        tmp_2->Yi += (tmp_2->vit / 100);
+        tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+        draw(plane, rec, window, tab);
+    } else if ((tmp_2->Xi >= tmp_2->X) && (tmp_2->Yi >= tmp_2->Y - 1)) {
+        tmp_2->Xi -= (tmp_2->vit / 100);
+        tmp_2->Yi -= (tmp_2->vit / 100);
+        tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+        draw(plane, rec, window, tab);
+    }
+    return;
+}
+
+void cond_1(plane_t *tmp_2, int *tab, sfRenderWindow *window, sfRectangleShape *rec, sfSprite *plane)
+{
+    if ((tmp_2->Xi <= tmp_2->X) && (tmp_2->Yi <= tmp_2->Y)) {
+        tmp_2->Xi += (tmp_2->vit / 100);
+        tmp_2->Yi += (tmp_2->vit / 100);
+        tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+        draw(plane, rec, window, tab);
+    } else if ((tmp_2->Xi <= tmp_2->X) && (tmp_2->Yi >= tmp_2->Y)) {
+        tmp_2->Xi += (tmp_2->vit / 100);
+        tmp_2->Yi -= (tmp_2->vit / 100);
+        tab = coordonnée(tmp_2->Xi, tmp_2->Yi, tmp_2->vit);
+        draw(plane, rec, window, tab);
+    }
+    return;
+}
+
+
+
+
+int draw(sfSprite *plane, sfRectangleShape *rec, sfRenderWindow *window, int *a)
+{
+    sfVector2f pos = {a[0], a[1]};
+    rec = rect_1(a[0], a[1], sfRed);
+    //sfRenderWindow_drawRectangleShape(window, rec, NULL);                                                                                                   
+    sfSprite_setPosition(plane, pos);
+//    sfRenderWindow_drawSprite(window, plane, NULL);                                                                                                         
+}

@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import csv
+import sys
+
+def read_csv(file_path):
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file, delimiter=';')
+            header = next(reader)
+            data = {row[1].strip().upper(): row for row in reader}
+            return header, data
+    except Exception as e:
+        print(f"Erreur lors de la lecture du fichier : {e}")
+        return None, None
+
+def pars_val(country_data):
+    numeric_values = []
+    for value in country_data[2:]:
+        try:
+            numeric_values.append(float(value) / 1000000)
+        except ValueError:
+            continue
+    return numeric_values
+
+def sum_exp1(val):
+    total = sum(val)
+    return total
+
+def sum_exp2(val):
+    total_exp2 = sum(value ** 2 for value in val)
+    return total_exp2
+
+def get_country_data_by_name(country_name, data):
+    if not country_name.isupper():
+        exit(84)
+    country_name_clean = country_name.strip().upper()
+    if country_name_clean in data:
+        country_data = data[country_name_clean]
+        country_name = country_data[0]
+        country_code = country_data[1]
+        
+        val = pars_val(country_data)
+        total = sum_exp1(val)
+        total_exp2 = sum_exp2(val)
+
+        return { 
+            "name": country_name,
+            "code": country_code,
+            "population": val,
+            "total_exp1": total,
+            "total_exp2": total_exp2
+        }
+    else:
+        exit(84)
+
+def get_country_data(data, country_names):
+    results = {}
+    for country_name in country_names:
+        results[country_name] = get_country_data_by_name(country_name, data)
+    return results
+
+def remain():
+    if len(sys.argv) < 2:
+        print("Veuillez spécifier au moins un pays.")
+        exit(84)
+    
+    countries = sys.argv[1:]
+    print(f"Code pays entré : {countries}")
+    
+    file_path = '105demography_data.csv'
+    header, data = read_csv(file_path)
+
+    if data:
+        data = get_country_data(data, countries)
+        for country, info in data.items():
+            print(f"\nDonnées pour {country}:")
+            if isinstance(info, dict):
+                print(f"Nom: {info['name']}, Code: {info['code']}")
+                print(f"Valeurs numériques: {info['population']}")
+                print(f"Somme des valeurs: {info['total_exp1']}")
+                print(f"Somme des carrés: {info['total_exp2']}")
+            else:
+                print(info)
+
+def usage():
+    print("USAGE")
+    print("    ./105demography [code]+\n")
+    print("DESCRIPTION")
+    print("    code    country code")
+
+def main():
+    if len(sys.argv) < 2:
+        print("Veuillez spécifier au moins un pays.")
+        exit(84)
+    else:
+        if (sys.argv[1] == "-h"):
+            usage()
+        else:
+            remain()
+
+if __name__ == "__main__":
+    main()

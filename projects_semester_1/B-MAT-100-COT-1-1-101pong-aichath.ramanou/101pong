@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+import math
+import sys
+
+def usage() :
+    print("   x0 ball abscissa at time t - 1")
+    print("   y0 ball ordinate at time t - 1")
+    print("   z0 ball altitude at time t - 1")
+    print("   x1 ball abscissa at time t")
+    print("   y1 ball ordinate at time t")
+    print("   z1 ball altitude at time t")
+    print("   n time shift (greater than or equal to zero, integer)")
+
+def velocity(x0, y0, z0, x1, y1, z1, n) :
+    vitx = x1 - x0
+    vity = y1 - y0
+    vitz = z1 - z0
+    
+    vitesse_magnitude = math.sqrt(vitx**2 + vity**2 + vitz**2)
+    angle = math.asin(abs(vitz) / vitesse_magnitude) * (180 / math.pi)
+    
+    if (n > 0) :
+        vftx = (vitx * n) + x1
+        vfty = (vity * n) + y1
+        vftz = (vitz * n) + z1
+        
+        print("The velocity vector of the ball is :")
+        print("("f"{vitx:.2f}"", " f"{vity:.2f}"", " f"{vitz:.2f}"")")
+        print("At time t + " f"{n:.0f},","ball coordinates will be :")
+        print("("f"{vftx:.2f}"", " f"{vfty:.2f}"", " f"{vftz:.2f}"")")
+        print("The incidence angle is :")
+        if ((z1 < 0 and vftz < 0) or (z1 > 0 and vftz > 0)) :
+            print("The ball won't reach the paddle.")
+        else :
+            print(f"{angle:.2f}", "degrees")
+
+    else :
+        print("error this tile is not corret")
+        exit (84)
+        
+def main() :
+    if len(sys.argv) == 2 :
+        if sys.argv[1] == "-h" :
+            usage()
+    else :
+        if len(sys.argv) == 8 :
+            x0 = float(sys.argv[1])
+            y0 = float(sys.argv[2])
+            z0 = float(sys.argv[3])
+            x1 = float(sys.argv[4])
+            y1 = float(sys.argv[5])
+            z1 = float(sys.argv[6])
+            n = float(sys.argv[7])
+            velocity(x0, y0, z0, x1, y1, z1, n)
+        else :
+            exit (84)
+
+if __name__ == "__main__":
+    main()
