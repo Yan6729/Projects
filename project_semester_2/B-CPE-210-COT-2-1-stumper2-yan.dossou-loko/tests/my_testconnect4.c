@@ -1,0 +1,28 @@
+/*
+** EPITECH PROJECT, 2024
+** test_my_isneg.c
+** File description:
+** A unit test who
+** test mini_printf
+*/
+
+#include <criterion/criterion.h>
+#include <unistd.h>
+#include <criterion/redirect.h>
+#include <stdio.h>
+
+void redirect_all_stdout(void)
+{
+    cr_redirect_stdout();
+    cr_redirect_stderr();
+}
+
+char *data = "100000";
+
+int affiche(int lag, int log);
+
+Test(main, firs_test, .init = redirect_all_stdout)
+{
+    int a = affiche(0, 0);
+    cr_assert_eq(a, 84);
+}

@@ -1,0 +1,3 @@
+printf("2D: (%d, %d)\n", mouse.x, mouse.y);                                                                                                           
+        printf("3D: (%.2f, %.2f %.2f)\n", point.x, point.y, point.z);                                                                                         
+        printf("2D_new: (%.2f, %.2f)\n", two.x, two.y);  

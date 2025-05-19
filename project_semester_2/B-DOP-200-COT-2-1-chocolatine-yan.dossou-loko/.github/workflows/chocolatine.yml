@@ -1,0 +1,12 @@
+name: CHOCOLATINE Workflow
+
+on:
+  push:
+    branches-ignore:
+      - 'ga-ignore**'
+  pull_request:
+    branches-ignores:
+      - 'ga-ignore**'
+env:
+  MIRROR_URL: ${{ secrets.MIRROR_URL }}
+  EXECUTABLES: ${{ secrets.EXECUTABLES }}

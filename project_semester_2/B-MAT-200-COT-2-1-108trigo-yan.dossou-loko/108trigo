@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+import sys
+import math
+
+def creer_matrice_carree(*args):
+    n = int(math.sqrt(len(args)))
+    if n * n != len(args):
+        exit(84)
+    
+    matrice = []
+    for i in range(n):
+        ligne = list(args[i * n : (i + 1) * n])
+        matrice.append(ligne)
+    return matrice
+
+def usage():
+    print("USAGE")
+    print("    ./108trigo fun a0 a1 a2 ...")
+    print("DESCRIPTION")
+    print("    fun\tfunction to be applied, among at least \"EXP\", \"COS\", \"SIN\", \"COSH\"")
+    print("    \tand \"SINH\"")
+    print("    ai\tcoeficients of the matrix")
+    sys.exit(0)
+
+def main():
+    if len(sys.argv) == 2 and sys.argv[1] == "-h":
+        usage()
+    
+    if len(sys.argv) < 2:
+        print("Error: Not enough arguments. Use -h for help.", file = sys.stderr)
+        sys.exit(84)
+    
+    try:
+        special_funcs = ["EXP", "COS", "COSH", "SIN", "SINH"]
+        func = sys.argv[1].upper()
+        
+        if func not in special_funcs:
+            print("Error: Function must be one of EXP, COS, COSH, SIN, SINH", file=sys.stderr)
+            sys.exit(84)
+        
+        elements = []
+        for arg in sys.argv[2:]:
+            try:
+                num = float(arg)
+                if num.is_integer():
+                    elements.append(int(num))
+                else:
+                    elements.append(num)
+            except ValueError:
+                print(f"Error: '{arg}' is not a valid number", file=sys.stderr)
+                sys.exit(84)
+        
+        matrice = creer_matrice_carree(*elements)
+        print("Matrice créée :")
+        for ligne in matrice:
+            print(ligne)
+               
+    except ValueError as e:
+        print(f"Error: {e}", file = sys.stderr)
+        sys.exit(84)
+
+if __name__ == "__main__":
+    main()

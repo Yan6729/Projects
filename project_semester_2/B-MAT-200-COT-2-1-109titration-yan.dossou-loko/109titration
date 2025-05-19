@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+
+import sys
+import math
+import os
+import csv
+
+def usage():
+        print("""USAGE
+    ./109titration file
+DESCRIPTION
+    file\ta csv file containing "vol;ph" lines""")
+
+def is_number(s):
+    if s.replace('.', '', 1).isdigit():
+        return True
+    return False
+
+def alpha_value(matrice):
+    for row in matrice:
+        if len(row) > 2:
+            sys.exit(84)
+        for elem in row:
+            if not is_number(elem):
+                sys.exit(84)
+
+def error_case(arg, separator):
+    charac = arg.split(".")
+    if not charac[1] == "csv":
+        sys.exit(84)
+    if not os.path.exists(arg):
+        sys.exit(84)
+    matrice = []
+    if os.path.getsize(arg) == 0:
+        sys.exit(84)
+    fd = open(arg, "r")
+    for n in fd:
+        val = n.replace("\n", "")
+        matrice.append(list(val.split(separator)))
+    alpha_value(matrice)
+    return matrice
+
+def separation_matrice(matrice):
+    vol = []
+    ph = []
+    for elem in matrice:
+        vol.append(float(elem[0]))
+        ph.append(float(elem[1]))
+    
+    for i in ph:
+        if i < 0.0 or i > 14.0:
+            sys.exit(84)
+    for a in vol:
+        if a < 0.0:
+            sys.exit(84)
+    return vol, ph
+
+def derive_calcul(vol, ph, i):
+    val_i = float(vol[i + 1] - vol[i])
+    val_j = float(vol[i] - vol[i - 1])
+    val_1 = float((ph[i + 1] - ph[i]) / val_i)
+    val_2 = float((ph[i] - ph[i - 1]) / val_j)
+    derive = float((val_1 * val_j + val_2 * val_i) / (val_i + val_j))
+    return derive
+
+def derive_sec_calcul(vol, content, i):
+    a = i - 1
+    val_i = float(vol[i + 1] - vol[i])
+    val_j = float(vol[i] - vol[i - 1])
+    val_1 = float((content[a + 1] - content[a]) / val_i)
+    val_2 = float((content[a] - content[a - 1]) / val_j)
+    derive = float((val_1 * val_j + val_2 * val_i) / (val_i + val_j))
+    return derive
+
+def linear_interpoltion(vol, snd_content, content, i):
+    a = i - 1
+    farc = (vol[i + 1] - vol[i]) / (content[a] - content[a - 1])
+    mult = ((snd_content[a] - vol[i]) * farc)
+    interpolate = content[a] + mult
+    return interpolate
+
+def print_elem(derive, vol):
+    print("Derivative:")
+    maxim = max(derive)
+    for i in range(1, len(vol)- 1):
+        print(f"{vol[i]:.1f} ml -> {derive[i - 1]:.2f}")
+        if derive[i - 1] == maxim:
+            value = vol[i]
+    print(f"\nEquivalence point at {value:.1f} ml")
+
+def print_elem_2(derive, vol):
+    print("\nSecond derivative:")
+    for i in range(1, len(derive)):
+        print(f"{vol[i + 1]:.1f} ml -> {derive[i]:.2f}")
+
+def print_inter(linear_mat, vol):
+    print("\nSecond derivative estimated:")
+    for i in range(1, len(linear_mat)):
+        print(f"{vol[i - 1]:.1f} ml -> {linear_mat[i]:.2f}")
+
+def main():
+    separator = ";"
+    content = []
+    snd_content = []
+    linear_mat = []
+    if len(sys.argv) == 1 or len(sys.argv) > 3:
+        print("""USAGE
+    ./109titration file""")
+        sys.exit(84)
+    elif len(sys.argv) == 2:
+        if sys.argv[1] == "-h":
+            usage()
+        else:
+            matrice = error_case(sys.argv[1], separator)
+            vol, ph = separation_matrice(matrice)
+            for i in range(1, len(vol) - 1):
+                derive = derive_calcul(vol, ph, i)
+                content.append(float(derive))
+            for a in range(1, len(content)):
+                derive_2 = derive_sec_calcul(vol, content, a)
+                snd_content.append(float(derive_2))
+            for b in range(1, len(content)):
+                line = linear_interpoltion(vol, snd_content, content, b)
+                linear_mat.append(line)
+            print_elem(content, vol)
+            print_elem_2(snd_content, vol)
+            print_inter(linear_mat, vol)
+    else:
+        sys.exit(84)
+            
+
+if __name__ == "__main__":
+    main()

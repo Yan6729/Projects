@@ -1,0 +1,22 @@
+{
+  "name": "b-web-200-cot-2-1-bsepytodo-yan.dossou-loko",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EpitechPGEPromo2029/B-WEB-200-COT-2-1-bsepytodo-yan.dossou-loko.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EpitechPGEPromo2029/B-WEB-200-COT-2-1-bsepytodo-yan.dossou-loko/issues"
+  },
+  "homepage": "https://github.com/EpitechPGEPromo2029/B-WEB-200-COT-2-1-bsepytodo-yan.dossou-loko#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
