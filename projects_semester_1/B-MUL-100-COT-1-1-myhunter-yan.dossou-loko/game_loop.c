@@ -75,7 +75,7 @@ sfVector2f manage_events2(sfRenderWindow *window, sfEvent event,
 
 void create_game(sfRenderWindow *window, sfEvent event, float seconds)
 {
-    sfSprite *my_duck = draw_duck("my_duck.png");
+    sfSprite *my_duck = draw_duck("enemy.png");
     sfSprite *game = create_background_2("paysage.jpeg");
     sfVector2f my_pos = {0, 0};
     sfClock *clock = sfClock_create();

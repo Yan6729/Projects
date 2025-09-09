@@ -14,7 +14,8 @@ void animate_sprite(sfSprite *my_duck, int frame_count)
 {
     sfIntRect area = sfSprite_getTextureRect(my_duck);
 
-    area.left = (area.left + 110) % 330;
+    printf("%d\n", area.left);
+    area.left = (area.left + 150) % 330;
     if (area.left >= frame_count * 110)
         area.left = 0;
     sfSprite_setTextureRect(my_duck, area);

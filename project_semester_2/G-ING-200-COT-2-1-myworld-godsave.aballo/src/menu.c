@@ -62,7 +62,7 @@ int analyse_events(sfRenderWindow *window, sfEvent event, int ac, char **av)
 int menu(int ac, char **av)
 {
     sfVideoMode mode = {1920, 1080, 64};
-    sfUint32 sf = {sfClose | sfResize};
+    sfUint32 sf = {sfClose};
     sfRenderWindow *window = sfRenderWindow_create(mode, "My_world !", sf, 0);
     sfEvent event = {0};
     sfSprite *background_1 = create_background("background.jpg");
