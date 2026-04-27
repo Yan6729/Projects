@@ -1,8 +1,0 @@
-#include <errno.h>
-#include <unistd.h>
-int main() {
-char *args[] = {av[1], NULL};
-    execvp(av[1], args);
-    perror("execvp");
-return 1;
-}

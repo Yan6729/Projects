@@ -36,6 +36,8 @@ char *special_cd(char *path, env_t *list)
     }
     if (my_strcmp(path, "-") == 0) {
         oldpwd = my_getenv_list(list, "OLDPWD");
+	if (oldpwd == NULL)
+	    return NULL;
         my_puts(oldpwd);
         my_putchar('\n');
         return oldpwd;

@@ -24,7 +24,7 @@ double bombyx2(int ac, char **av)
     double i0 = atof(av[2]);
     double i1 = atof(av[3]);
     double xi = 0;
-    double x = 0;
+//    double x = 0;
     double k = 1.0;
     int i = 1;
     int j = 0;

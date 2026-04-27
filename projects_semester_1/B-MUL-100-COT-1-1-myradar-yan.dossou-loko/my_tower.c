@@ -31,6 +31,7 @@ tower_t *my_list(int ac, char **av)
     tower_t *data = NULL;
     char **dat = map_stocked(dat, a, ac, av);
 
+    if (dat == NULL) return data;
     for (list = NULL; dat[a] != NULL; a++) {
         if (my_strcmp(dat[a], "T") == 0) {
             data = malloc(sizeof(*data));

@@ -31,8 +31,16 @@ char *my_revstr(char *str)
     return (str);
 }
 
-int main(int ac, char **av)
+char *revstr(char *str)
 {
-    printf("%s", my_revstr(av[1]));
-    printf("%d", my_strcmp(my_revstr(av[1])));
+    int length = strlen(str);
+    char *revst = malloc(sizeof(char) * length);
+    int b = 0;
+
+    for (int a = length - 1; a >= 0; a--) {
+        revst[b] = str[a];
+        b++;
+    }
+    revst[length] = '\0';
+    return revst;
 }

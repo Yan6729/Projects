@@ -41,6 +41,7 @@ int game_loop(file_t cmp, int ac, char **av)
     tower_t *tow;
     sfClock *clock = sfClock_create();
 
+    if (temp_1 == NULL || temp_2 == NULL) return 84;
     cmp = structure();
     while (sfRenderWindow_isOpen(cmp.window)) {
         manage_events(cmp);
@@ -65,6 +66,6 @@ int main(int ac, char **av)
     } else if (ac == 2 && av[1][0] == '-' && av[1][1] == 'h') {
         usage(ac, av);
     } else {
-        game_loop(cmp, ac, av);
+        return game_loop(cmp, ac, av);
     }
 }

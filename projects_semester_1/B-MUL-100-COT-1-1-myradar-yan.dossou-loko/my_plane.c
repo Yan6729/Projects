@@ -39,6 +39,7 @@ plane_t *list(int ac, char **av)
     static int id = 0;
     char **dat = map_stocked(dat, a, ac, av);
 
+    if (dat == NULL) return data;
     for (list = NULL; dat[a] != NULL; a += 7) {
         if (my_strcmp(dat[a], "A") == 0) {
             data = malloc(sizeof(*data));
