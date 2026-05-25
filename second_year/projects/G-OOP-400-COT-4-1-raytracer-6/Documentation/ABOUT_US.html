@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RayTracer — Documentation Technique</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04080f;
+    --bg2: #080e1a;
+    --bg3: #0c1526;
+    --blue-deep: #0a1628;
+    --blue-mid: #0f2a4a;
+    --blue-muted: #1a3d6b;
+    --blue-main: #2563eb;
+    --blue-bright: #3b82f6;
+    --blue-light: #60a5fa;
+    --blue-pale: #93c5fd;
+    --blue-ghost: #bfdbfe;
+    --blue-ice: #dbeafe;
+    --cyan: #06b6d4;
+    --cyan-dim: #0891b2;
+    --white: #f0f6ff;
+    --text: #cbd5e1;
+    --text-dim: #64748b;
+    --text-muted: #334155;
+    --border: rgba(37, 99, 235, 0.2);
+    --border-bright: rgba(59, 130, 246, 0.4);
+    --glow: rgba(37, 99, 235, 0.15);
+    --glow-strong: rgba(59, 130, 246, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 600px; height: 600px; background: rgba(14,58,168,0.25); top: -200px; right: -200px; }
+  .orb-2 { width: 500px; height: 500px; background: rgba(6,182,212,0.08); bottom: -100px; left: -150px; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(37,99,235,0.12); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 270px;
+    background: rgba(8, 14, 26, 0.95);
+    border-right: 1px solid var(--border);
+    padding: 2rem 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(20px);
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .sidebar-logo .logo-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .sidebar-logo h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.03em;
+  }
+  .sidebar-logo .version {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.2rem;
+  }
+
+  .nav-section { margin-bottom: 0.25rem; }
+  .nav-section-title {
+    padding: 0.5rem 1.5rem;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .nav-item {
+    display: block;
+    padding: 0.45rem 1.5rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--blue-light);
+    background: rgba(37,99,235,0.08);
+    border-left-color: var(--blue-bright);
+  }
+  .nav-item .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--blue-muted);
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    transition: background 0.2s;
+  }
+  .nav-item:hover .dot { background: var(--blue-bright); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 270px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6rem 5rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue-main), transparent);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--cyan);
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--blue-bright), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    max-width: 600px;
+    font-size: 1.1rem;
+    color: var(--text);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+  }
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 0.35rem 0.9rem;
+    border-radius: 2px;
+    border: 1px solid var(--border-bright);
+    color: var(--blue-pale);
+    background: rgba(37,99,235,0.08);
+    letter-spacing: 1px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    gap: 2rem;
+    width: fit-content;
+  }
+  .stat-block { text-align: center; }
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+    background: linear-gradient(180deg, var(--white), var(--blue-pale));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .section:nth-child(even) { background: rgba(8,14,26,0.5); }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .section-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--blue-muted);
+    padding-top: 0.6rem;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .section-title-block {}
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .card {
+    background: rgba(12,21,38,0.8);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.75rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue-main), var(--cyan));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover {
+    border-color: var(--border-bright);
+    box-shadow: 0 0 30px var(--glow);
+    transform: translateY(-2px);
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: rgba(4,8,15,0.9);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+  .code-header {
+    background: rgba(12,21,38,0.9);
+    padding: 0.6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .code-dot:nth-child(1) { background: #2563eb; }
+  .code-dot:nth-child(2) { background: #0891b2; }
+  .code-dot:nth-child(3) { background: #1d4ed8; }
+  pre {
+    padding: 1.5rem 1.25rem;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--blue-ice);
+  }
+  .kw { color: var(--blue-light); }
+  .ty { color: var(--cyan); }
+  .str { color: #93dde1; }
+  .cm { color: var(--text-muted); font-style: italic; }
+  .fn { color: var(--blue-ghost); }
+  .num { color: #7dd3fc; }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  th {
+    background: rgba(12,21,38,0.9);
+    color: var(--blue-pale);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-bright);
+  }
+  td {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(37,99,235,0.08);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(37,99,235,0.05); }
+  td code, th code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    background: rgba(6,182,212,0.1);
+    padding: 0.1em 0.4em;
+    border-radius: 2px;
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-diagram {
+    background: rgba(4,8,15,0.9);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem;
+    margin: 2rem 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--blue-pale);
+    line-height: 2;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ── MODULES HERO ── */
+  .module-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin: 2rem 0;
+  }
+
+  .module-card {
+    background: rgba(8,14,26,0.9);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .module-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle at bottom right, rgba(37,99,235,0.1), transparent 70%);
+    pointer-events: none;
+  }
+  .module-card:hover {
+    border-color: var(--border-bright);
+    box-shadow: 0 0 40px var(--glow);
+  }
+  .module-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .module-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+  .module-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--blue-main);
+    background: rgba(37,99,235,0.07);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--blue-light);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+  .callout p { font-size: 13.5px; color: var(--text); }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: rgba(12,21,38,0.9);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    font-size: 13px;
+    color: var(--blue-pale);
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    color: var(--blue-muted);
+    padding: 0 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  /* ── PATTERN CARDS ── */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  .pattern-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    background: rgba(10,22,40,0.8);
+    transition: all 0.25s;
+  }
+  .pattern-card:hover {
+    border-color: var(--cyan-dim);
+    background: rgba(12,21,38,0.9);
+  }
+  .pattern-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.5rem;
+  }
+  .pattern-where {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 0.6rem;
+  }
+  .pattern-why { font-size: 12.5px; color: var(--text); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 3rem 5rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: rgba(4,8,15,0.8);
+  }
+  .footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+  }
+  .footer span { color: var(--blue-bright); }
+
+  /* ── INLINE ── */
+  p code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    background: rgba(6,182,212,0.1);
+    padding: 0.15em 0.4em;
+    border-radius: 2px;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 2rem 0 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--blue-pale);
+    margin: 1.25rem 0 0.5rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  p { margin-bottom: 0.75rem; color: var(--text); }
+  ul { margin: 0.75rem 0 0.75rem 1.5rem; }
+  ul li { color: var(--text); font-size: 13.5px; margin-bottom: 0.35rem; line-height: 1.6; }
+  ul li::marker { color: var(--blue-main); }
+  strong { color: var(--blue-pale); font-weight: 600; }
+
+  /* ── SCROLL ANIM ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--blue-muted); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--blue-main); }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Epitech 2026</div>
+    <h2>RayTracer</h2>
+    <div class="version">G-OOP-400 · C++17</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Vue générale</div>
+    <a href="#intro" class="nav-item"><span class="dot"></span>Introduction</a>
+    <a href="#architecture" class="nav-item"><span class="dot"></span>Architecture</a>
+    <a href="#modules" class="nav-item"><span class="dot"></span>Modules</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Modules</div>
+    <a href="#primitives" class="nav-item"><span class="dot"></span>Primitives</a>
+    <a href="#transforms" class="nav-item"><span class="dot"></span>Transformations</a>
+    <a href="#lights" class="nav-item"><span class="dot"></span>Lumières</a>
+    <a href="#renderer" class="nav-item"><span class="dot"></span>Renderer</a>
+    <a href="#camera" class="nav-item"><span class="dot"></span>Caméra</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Système</div>
+    <a href="#plugins" class="nav-item"><span class="dot"></span>Plugins (.so)</a>
+    <a href="#parser" class="nav-item"><span class="dot"></span>Parser & Builder</a>
+    <a href="#patterns" class="nav-item"><span class="dot"></span>Design Patterns</a>
+    <a href="#pipeline" class="nav-item"><span class="dot"></span>Pipeline de rendu</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero" id="intro">
+    <div class="hero-eyebrow">Documentation Technique</div>
+    <h1>Ray<span>Tracer</span><br>Engine</h1>
+    <p class="hero-desc">
+      Moteur de rendu par lancer de rayons modulaire développé en C++17. 
+      Architecture orientée plugins, entièrement extensible, avec support 
+      des primitives géométriques, transformations matricielles et modèle d'éclairage physique.
+    </p>
+    <div class="hero-badges">
+      <span class="badge">C++17</span>
+      <span class="badge">libconfig</span>
+      <span class="badge">SFML</span>
+      <span class="badge">PPM Output</span>
+      <span class="badge">Plugin System</span>
+      <span class="badge">Epitech 2026</span>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-block">
+        <div class="stat-num">6+</div>
+        <div class="stat-label">Primitives</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Types de lumières</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Design Patterns</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Modes de rendu</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE GLOBALE -->
+  <section class="section" id="architecture">
+    <div class="section-header">
+      <div class="section-number">01</div>
+      <div class="section-title-block">
+        <div class="section-tag">Vue d'ensemble</div>
+        <h2 class="section-title">Architecture Globale</h2>
+      </div>
+    </div>
+
+    <p>Le projet repose sur une architecture en couches strictement séparées. Chaque couche communique avec la suivante via des interfaces abstraites, garantissant un couplage faible et une extensibilité maximale.</p>
+
+    <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────────┐
+│                         APPLICATION LAYER                           │
+│                   Renderer (CLI)  ·  SfmlOutput (GUI)              │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+┌───────────────────────────────▼─────────────────────────────────────┐
+│                          SCENE LAYER                                │
+│            SceneParser  →  SceneBuilder  →  Scene                  │
+└───────────┬────────────────────────────────────────┬────────────────┘
+            │                                        │
+┌───────────▼──────────┐              ┌──────────────▼───────────────┐
+│   PRIMITIVES LAYER   │              │       LIGHTS LAYER           │
+│  IPrimitive          │              │  ILight                      │
+│  ├── Sphere          │              │  ├── AmbientLight             │
+│  ├── Plane           │              │  ├── DirectionalLight         │
+│  ├── Cylinder        │              │  └── PointLight               │
+│  ├── Cone            │              │                               │
+│  ├── Torus           │              │  computeLighting()            │
+│  └── Triangle        │              └───────────────────────────────┘
+│  TransformedPrimitive│
+└───────────┬──────────┘
+            │
+┌───────────▼──────────────────────────────────────────────────────────┐
+│                         MATH LAYER                                   │
+│               Vec3  ·  Mat4  ·  Ray  ·  HitRecord                  │
+└──────────────────────────────────────────────────────────────────────┘
+            │
+┌───────────▼──────────────────────────────────────────────────────────┐
+│                        PLUGIN LAYER                                  │
+│          PluginLoader  ·  PluginFactory&lt;T&gt;  ·  .so files            │
+└──────────────────────────────────────────────────────────────────────┘</div>
+
+    <div class="module-row">
+      <div class="module-card">
+        <div class="module-tag">Objectif</div>
+        <div class="module-name">Modularité</div>
+        <div class="module-desc">Chaque module est indépendant et peut être remplacé ou étendu sans toucher au reste du moteur. Les primitives et lumières sont des plugins chargés dynamiquement.</div>
+      </div>
+      <div class="module-card">
+        <div class="module-tag">Design</div>
+        <div class="module-name">Interfaces pures</div>
+        <div class="module-desc">Le moteur ne connaît que <code>IPrimitive</code> et <code>ILight</code>. Jamais <code>Sphere</code> ou <code>PointLight</code> directement — le découplage est total.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULES OVERVIEW -->
+  <section class="section" id="modules">
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <div class="section-title-block">
+        <div class="section-tag">Structure</div>
+        <h2 class="section-title">Modules du Projet</h2>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">primitives/</div>
+        <div class="card-desc">IPrimitive, AbstractPrimitive, Sphere, Plane, Cylinder, Cone, Torus, Triangle, TransformedPrimitive, HitRecord.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">math/</div>
+        <div class="card-desc">Vec3 (opérateurs, cross, dot, normalize), Mat4 (inverse, transpose, factories), Ray, transformations de points/normales.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">lights/</div>
+        <div class="card-desc">ILight, Color (RGB normalisé), AmbientLight, DirectionalLight, PointLight, computeLighting().</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">renderer/</div>
+        <div class="card-desc">Renderer (CLI), SfmlOutput (GUI interactif), FrameBuffer, PpmOutput, OutputFactorie, LoadFiles.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">camera/</div>
+        <div class="card-desc">Camera (lancer de rayons), Rectangle3D (plan de projection), configCamera() avec gestion du pitch/yaw.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">factories/</div>
+        <div class="card-desc">PluginLoader (dlopen/dlsym), PluginFactory&lt;T&gt; générique, PrimitiveFactory (Singleton).</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">parser/</div>
+        <div class="card-desc">SceneParser (libconfig), structures SphereData/PlaneData/…, parsing des transformations depuis .cfg.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">builder/</div>
+        <div class="card-desc">SceneBuilder : traduit les données parser en objets runtime, construit les matrices, encapsule dans TransformedPrimitive.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIMITIVES -->
+  <section class="section" id="primitives">
+    <div class="section-header">
+      <div class="section-number">03</div>
+      <div class="section-title-block">
+        <div class="section-tag">Module</div>
+        <h2 class="section-title">Primitives Géométriques</h2>
+      </div>
+    </div>
+
+    <h3>Interface IPrimitive</h3>
+    <p>Toutes les primitives implémentent cette interface pure. Elle définit le contrat minimal pour l'intersection rayon/surface.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="kw">class</span> <span class="ty">IPrimitive</span> {
+<span class="kw">public</span>:
+    <span class="kw">virtual</span> ~<span class="ty">IPrimitive</span>() = <span class="kw">default</span>;
+
+    <span class="cm">// Configure la primitive depuis un fichier de scène</span>
+    <span class="kw">virtual</span> <span class="ty">void</span> <span class="fn">configure</span>(<span class="kw">const</span> std::map&lt;std::string, <span class="ty">double</span>&gt;&amp; params) = <span class="num">0</span>;
+
+    <span class="cm">// Retourne le point d'intersection ou nullopt</span>
+    <span class="kw">virtual</span> std::optional&lt;<span class="ty">HitRecord</span>&gt; <span class="fn">intersect</span>(
+        <span class="kw">const</span> <span class="ty">Ray</span>&amp; ray,
+        <span class="ty">double</span> tMin = <span class="num">1e-4</span>,
+        <span class="ty">double</span> tMax = std::numeric_limits&lt;<span class="ty">double</span>&gt;::infinity()
+    ) <span class="kw">const</span> = <span class="num">0</span>;
+};</pre>
+    </div>
+
+    <h3>Primitives disponibles</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Primitive</th><th>Méthode d'intersection</th><th>Particularités</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sphere</strong></td>
+            <td>Équation quadratique <code>at² + bt + c = 0</code></td>
+            <td>Normale = (point − centre) / rayon</td>
+          </tr>
+          <tr>
+            <td><strong>Plane</strong></td>
+            <td>Produit scalaire <code>t = (C−O)·N / (D·N)</code></td>
+            <td>Normale constante, rejet si rayon parallèle</td>
+          </tr>
+          <tr>
+            <td><strong>Cylinder</strong></td>
+            <td>Projection sur plan XZ + bornes Y</td>
+            <td>Hauteur finie, normale horizontale</td>
+          </tr>
+          <tr>
+            <td><strong>Cone</strong></td>
+            <td>Quadratique avec pente <code>k = r/h</code></td>
+            <td>Apex en haut, hauteur limitée</td>
+          </tr>
+          <tr>
+            <td><strong>Torus</strong></td>
+            <td>Équation quartique (méthode de Ferrari)</td>
+            <td>Plus coûteux, sélection de la plus petite racine réelle positive</td>
+          </tr>
+          <tr>
+            <td><strong>Triangle</strong></td>
+            <td>Algorithme de Möller-Trumbore</td>
+            <td>Coordonnées barycentriques, backface culling</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>HitRecord — Données d'intersection</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="kw">struct</span> <span class="ty">HitRecord</span> {
+    <span class="ty">double</span> t;        <span class="cm">// Distance sur le rayon</span>
+    <span class="ty">Vec3</span>   point;    <span class="cm">// Point d'intersection dans le monde</span>
+    <span class="ty">Vec3</span>   normal;   <span class="cm">// Normale à la surface</span>
+    <span class="ty">bool</span>   frontFace;<span class="cm">// Face avant ou arrière</span>
+    <span class="ty">Vec3</span>   _color;   <span class="cm">// Couleur de surface au point</span>
+};</pre>
+    </div>
+
+    <h3>TransformedPrimitive — Décorateur de transformation</h3>
+    <p>Encapsule n'importe quelle <code>IPrimitive</code> pour lui appliquer une transformation sans modifier la primitive elle-même.</p>
+
+    <div class="callout">
+      <div class="callout-title">Pipeline de transformation</div>
+      <p>1. Le rayon est transformé en espace local (world → objet) · 2. L'intersection est calculée localement · 3. Le point et la normale sont retransformés en espace monde · 4. La normale utilise la matrice inverse-transposée pour préserver l'orthogonalité.</p>
+    </div>
+  </section>
+
+  <!-- TRANSFORMATIONS -->
+  <section class="section" id="transforms">
+    <div class="section-header">
+      <div class="section-number">04</div>
+      <div class="section-title-block">
+        <div class="section-tag">Module</div>
+        <h2 class="section-title">Transformations & Math</h2>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-card">
+        <div class="module-tag">Vec3</div>
+        <div class="module-name">Vecteur 3D</div>
+        <div class="module-desc">Opérateurs arithmétiques complets, produit scalaire (<code>dot</code>), produit vectoriel (<code>cross</code>), normalisation, reflection, réfraction, interpolation linéaire.</div>
+      </div>
+      <div class="module-card">
+        <div class="module-tag">Mat4</div>
+        <div class="module-name">Matrice 4×4</div>
+        <div class="module-desc">Stockage colonne-major, multiplication, transposée, inverse (élimination de Gauss avec pivotage partiel). Factories : identity, translation, rotationX/Y/Z, rotation arbitraire (Rodrigues), scale.</div>
+      </div>
+    </div>
+
+    <h3>Matrices de transformation</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++ — Factories</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="cm">// Translation</span>
+<span class="ty">Mat4</span> t = <span class="ty">Mat4</span>::<span class="fn">translation</span>(<span class="num">10.0</span>, <span class="num">0.0</span>, <span class="num">5.0</span>);
+
+<span class="cm">// Rotations par axe</span>
+<span class="ty">Mat4</span> rx = <span class="ty">Mat4</span>::<span class="fn">rotationX</span>(<span class="num">45.0</span>);   <span class="cm">// degrés → radians en interne</span>
+<span class="ty">Mat4</span> ry = <span class="ty">Mat4</span>::<span class="fn">rotationY</span>(<span class="num">90.0</span>);
+<span class="ty">Mat4</span> rz = <span class="ty">Mat4</span>::<span class="fn">rotationZ</span>(<span class="num">30.0</span>);
+
+<span class="cm">// Rotation axe arbitraire (formule de Rodrigues)</span>
+<span class="ty">Mat4</span> r  = <span class="ty">Mat4</span>::<span class="fn">rotation</span>(axis, angle);
+
+<span class="cm">// Transformation finale (TRS)</span>
+<span class="ty">Mat4</span> transform = t * rx * ry * rz;</pre>
+    </div>
+
+    <h3>Transformation des normales</h3>
+    <p>Les normales ne se transforment <strong>pas</strong> comme les points. Elles nécessitent la matrice <strong>inverse-transposée</strong> pour rester perpendiculaires à la surface sous des transformations non-uniformes :</p>
+
+    <div class="callout">
+      <div class="callout-title">Règle importante</div>
+      <p>Points : <code>P' = M × P</code> &nbsp;·&nbsp; Normales : <code>N' = (M⁻¹)ᵀ × N</code></p>
+    </div>
+  </section>
+
+  <!-- LIGHTS -->
+  <section class="section" id="lights">
+    <div class="section-header">
+      <div class="section-number">05</div>
+      <div class="section-title-block">
+        <div class="section-tag">Module</div>
+        <h2 class="section-title">Système d'Éclairage</h2>
+      </div>
+    </div>
+
+    <p>Le module <code>lights</code> repose sur l'interface <code>ILight</code> et la classe <code>Color</code>. La fonction <code>computeLighting()</code> orchestre l'accumulation de toutes les sources pour un point donné.</p>
+
+    <h3>Classe Color</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode / Opérateur</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Color(r, g, b)</code></td><td>Construction depuis valeurs normalisées [0.0, 1.0]</td></tr>
+          <tr><td><code>Color::fromRGB255(r, g, b)</code></td><td>Construction depuis entiers 0–255 (divise par 255)</td></tr>
+          <tr><td><code>operator+</code>, <code>operator+=</code></td><td>Addition composante par composante</td></tr>
+          <tr><td><code>operator*(double)</code></td><td>Multiplication par scalaire</td></tr>
+          <tr><td><code>operator*(Color)</code></td><td>Multiplication composante par composante</td></tr>
+          <tr><td><code>clamped01()</code></td><td>Limite chaque canal à [0.0, 1.0]</td></tr>
+          <tr><td><code>toByte(v)</code></td><td>Convertit une valeur normalisée → entier [0, 255]</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Types de lumières</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">AmbientLight</div>
+        <div class="card-desc">
+          Éclairage uniforme sans direction. Tous les points reçoivent la même contribution.<br><br>
+          <strong>Calcul :</strong> <code>surfaceColor × intensity</code><br>
+          <strong>HitRecord ignoré</strong> (indépendant de la géométrie)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">DirectionalLight</div>
+        <div class="card-desc">
+          Source infiniment lointaine (soleil). Direction constante, pas d'atténuation.<br><br>
+          <strong>Modèle Lambert :</strong><br>
+          <code>lambert = max(0, normal · lightDir)</code><br>
+          <code>résultat = surfaceColor × diffuse × lambert</code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="card-title">PointLight</div>
+        <div class="card-desc">
+          Source ponctuelle avec atténuation quadratique physique.<br><br>
+          <code>att = 1 / (1 + 0.0001 × dist²)</code><br>
+          <code>résultat = surfaceColor × intensity × lambert × att</code>
+        </div>
+      </div>
+    </div>
+
+    <h3>computeLighting() — Accumulation</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="ty">Color</span> <span class="fn">computeLighting</span>(
+    <span class="kw">const</span> <span class="ty">HitRecord</span>&amp; hit,
+    <span class="kw">const</span> <span class="ty">Color</span>&amp; surfaceColor,
+    <span class="kw">const</span> <span class="ty">Scene</span>&amp; scene)
+{
+    <span class="ty">Color</span> result(<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; light : scene.<span class="fn">findLights</span>(<span class="str">"ambient"</span>))
+        result += light-&gt;<span class="fn">illuminate</span>(hit, surfaceColor);
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; light : scene.<span class="fn">findLights</span>(<span class="str">"directional"</span>))
+        result += light-&gt;<span class="fn">illuminate</span>(hit, surfaceColor);
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; light : scene.<span class="fn">findLights</span>(<span class="str">"point"</span>))
+        result += light-&gt;<span class="fn">illuminate</span>(hit, surfaceColor);
+
+    <span class="kw">return</span> result.<span class="fn">clamped01</span>();  <span class="cm">// ← évite les débordements</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- RENDERER -->
+  <section class="section" id="renderer">
+    <div class="section-header">
+      <div class="section-number">06</div>
+      <div class="section-title-block">
+        <div class="section-tag">Module</div>
+        <h2 class="section-title">Renderer & Sortie</h2>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-card">
+        <div class="module-tag">CLI</div>
+        <div class="module-name">Renderer</div>
+        <div class="module-desc">Rendu complet en une passe. Charge une scène <code>.cfg</code>, calcule tous les pixels, exporte via un <code>IOutput</code> (PPM par défaut). Résolution configurable via <code>Dimensions</code>.</div>
+      </div>
+      <div class="module-card">
+        <div class="module-tag">GUI</div>
+        <div class="module-name">SfmlOutput</div>
+        <div class="module-desc">Fenêtre SFML 1600×800 avec sélecteur de scènes, rendu progressif ligne par ligne, export PPM, états INTRO / MENU / RENDERER.</div>
+      </div>
+    </div>
+
+    <h3>FrameBuffer</h3>
+    <p>Conteneur 2D de couleurs. Accès en <code>O(1)</code> par coordonnées <code>(x, y)</code>. Lève une <code>RayTracerError</code> si les coordonnées sont hors limites.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>setPixel(x, y, color)</code></td><td>Écrit la couleur au pixel. Vérifie les bornes.</td></tr>
+          <tr><td><code>getPixel(x, y)</code></td><td>Lit la couleur. Vérifie les bornes.</td></tr>
+          <tr><td><code>getDimensions()</code></td><td>Retourne width × height</td></tr>
+          <tr><td><code>reset()</code></td><td>Remet tous les pixels à noir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>IOutput — Interface de sortie</h3>
+    <p>Abstraction de la destination du rendu. Toute nouvelle sortie (PNG, JPEG, réseau…) implémente simplement <code>void render(const FrameBuffer&amp;)</code>.</p>
+  </section>
+
+  <!-- CAMERA -->
+  <section class="section" id="camera">
+    <div class="section-header">
+      <div class="section-number">07</div>
+      <div class="section-title-block">
+        <div class="section-tag">Module</div>
+        <h2 class="section-title">Caméra & Projection</h2>
+      </div>
+    </div>
+
+    <h3>Rectangle3D — Écran virtuel</h3>
+    <p>Représente le plan de projection dans l'espace 3D. Défini par un coin origine et deux vecteurs directeurs.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="cm">// Convertit (u, v) normalisés en point 3D sur l'écran</span>
+<span class="ty">Vec3</span> <span class="fn">convertTo3D</span>(<span class="ty">double</span> u, <span class="ty">double</span> v) <span class="kw">const</span> {
+    <span class="kw">return</span> _O + (_I * u) + (_J * v);
+    <span class="cm">// u, v ∈ [0.0, 1.0] → balaie tout l'écran</span>
+}</pre>
+    </div>
+
+    <h3>Camera::thorwRay()</h3>
+    <p>Génère un rayon depuis la position caméra vers le pixel <code>(u, v)</code> de l'écran virtuel.</p>
+
+    <h3>configCamera() — Algorithme</h3>
+    <div class="callout">
+      <div class="callout-title">Étapes de configuration</div>
+      <p>
+        1. <strong>Origin</strong> = position (xp, yp, zp)<br>
+        2. <strong>FOV</strong> → halfW = tan(fov/2), halfH avec correction d'aspect ratio<br>
+        3. <strong>Forward</strong> = cos(pitch)·sin(yaw), sin(pitch), cos(pitch)·cos(yaw) — normalisé<br>
+        4. <strong>Cas dégénéré</strong> : si forward ∥ (0,1,0), worldUp = (0,0,1)<br>
+        5. <strong>right</strong> = normalize(forward × worldUp) · <strong>up</strong> = normalize(right × forward)<br>
+        6. <strong>screen</strong> = Rectangle3D(corner, right×2·halfW, up×2·halfH)
+      </p>
+    </div>
+  </section>
+
+  <!-- PLUGINS -->
+  <section class="section" id="plugins">
+    <div class="section-header">
+      <div class="section-number">08</div>
+      <div class="section-title-block">
+        <div class="section-tag">Système</div>
+        <h2 class="section-title">Système de Plugins</h2>
+      </div>
+    </div>
+
+    <p>Le moteur charge dynamiquement des primitives et lumières depuis des fichiers <code>.so</code>. Ajouter une nouvelle primitive ne nécessite <strong>pas</strong> de recompiler le moteur.</p>
+
+    <h3>Export d'un plugin</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++ — Plugin export</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="cm">// extern "C" évite le name mangling du C++</span>
+<span class="kw">extern</span> <span class="str">"C"</span> {
+    <span class="ty">IPrimitive</span>* <span class="fn">create</span>() {
+        <span class="kw">return</span> <span class="kw">new</span> <span class="ty">Sphere</span>();
+    }
+    <span class="kw">const char</span>* <span class="fn">getType</span>() {
+        <span class="kw">return</span> <span class="str">"sphere"</span>;
+    }
+}</pre>
+    </div>
+
+    <h3>PluginLoader</h3>
+    <p>Encapsule l'API POSIX : <code>dlopen</code> / <code>dlsym</code> / <code>dlclose</code>. Le loader reste vivant tant que la factory en a besoin — évite que les pointeurs de fonctions deviennent invalides.</p>
+
+    <h3>PluginFactory&lt;T&gt;</h3>
+    <p>Factory générique. La même logique gère <code>PluginFactory&lt;IPrimitive&gt;</code> et <code>PluginFactory&lt;ILight&gt;</code>. Les symboles <code>create()</code> sont résolus <strong>une seule fois</strong> à l'enregistrement.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">C++ — Utilisation</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre><span class="cm">// Enregistrement automatique depuis .so</span>
+factory.<span class="fn">loadPlugin</span>(<span class="str">"plugins/raytracer_sphere.so"</span>);
+
+<span class="cm">// Création à la demande, O(1)</span>
+<span class="kw">auto</span> sphere = factory.<span class="fn">create</span>(<span class="str">"sphere"</span>);</pre>
+    </div>
+  </section>
+
+  <!-- PARSER & BUILDER -->
+  <section class="section" id="parser">
+    <div class="section-header">
+      <div class="section-number">09</div>
+      <div class="section-title-block">
+        <div class="section-tag">Système</div>
+        <h2 class="section-title">Parser & SceneBuilder</h2>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">fichier .cfg</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">SceneParser</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">SphereData / PlaneData / …</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">SceneBuilder</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">PluginFactory::create()</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Scene</div>
+    </div>
+
+    <h3>SceneParser</h3>
+    <p>Lit les fichiers <code>.cfg</code> via <strong>libconfig</strong>. Produit des structures de données pures (<code>SphereData</code>, <code>PlaneData</code>…) sans créer d'objets runtime. Supporte les transformations :</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">CFG — Exemple de scène</span>
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      </div>
+      <pre>spheres = (
+{
+    x = <span class="num">0</span>; y = <span class="num">0</span>; z = <span class="num">-5</span>; r = <span class="num">1</span>;
+    translation = { x = <span class="num">2</span>; y = <span class="num">0</span>; z = <span class="num">0</span>; };
+    rotation    = { xr = <span class="num">0</span>; yr = <span class="num">45</span>; zr = <span class="num">0</span>; };
+}
+);</pre>
+    </div>
+
+    <h3>SceneBuilder</h3>
+    <p>Prend les structures du parser, crée les primitives via la factory, construit la matrice de transformation composite et encapsule le tout dans un <code>TransformedPrimitive</code> avant de l'ajouter à la <code>Scene</code>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Séparation des responsabilités</div>
+      <p>Le <strong>parser</strong> ne sait pas ce qu'est une primitive. Le <strong>builder</strong> ne sait pas comment parser. La <strong>factory</strong> ne connaît pas la scène. Chaque composant a un rôle unique.</p>
+    </div>
+  </section>
+
+  <!-- DESIGN PATTERNS -->
+  <section class="section" id="patterns">
+    <div class="section-header">
+      <div class="section-number">10</div>
+      <div class="section-title-block">
+        <div class="section-tag">Architecture</div>
+        <h2 class="section-title">Design Patterns</h2>
+      </div>
+    </div>
+
+    <div class="pattern-grid">
+      <div class="pattern-card">
+        <div class="pattern-name">Factory</div>
+        <div class="pattern-where">PluginFactory&lt;T&gt;, PrimitiveFactory</div>
+        <div class="pattern-why">Création dynamique d'objets sans connaître leur type concret. Permet l'ajout de primitives sans modifier le moteur.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">Builder</div>
+        <div class="pattern-where">SceneBuilder</div>
+        <div class="pattern-why">Construction progressive d'une scène complexe. Sépare le parsing du runtime et centralise la logique de création.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">Decorator</div>
+        <div class="pattern-where">TransformedPrimitive</div>
+        <div class="pattern-why">Ajoute des transformations à n'importe quelle primitive sans la modifier. Composable et transparent pour le client.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">Singleton</div>
+        <div class="pattern-where">PrimitiveFactory::getInstance()</div>
+        <div class="pattern-why">Instance unique de la factory. Thread-safe en C++11+ (Meyers' singleton), initialisation paresseuse.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">Template Method</div>
+        <div class="pattern-where">AbstractPrimitive</div>
+        <div class="pattern-why">Définit la structure de l'algorithme dans la base. Les sous-classes implémentent les étapes spécifiques (calculateNormal).</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">RAII</div>
+        <div class="pattern-where">unique_ptr, PluginLoader</div>
+        <div class="pattern-why">Gestion automatique de la mémoire. Les plugins sont fermés (dlclose) dès que leur loader est détruit.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section" id="pipeline">
+    <div class="section-header">
+      <div class="section-number">11</div>
+      <div class="section-title-block">
+        <div class="section-tag">Core</div>
+        <h2 class="section-title">Pipeline de Rendu</h2>
+      </div>
+    </div>
+
+    <p>Algorithme central exécuté pour chaque pixel. Identique en mode CLI (<code>Renderer::render()</code>) et GUI (<code>SfmlOutput::showTheRendering()</code>), à ceci près que le mode GUI rend une ligne par frame.</p>
+
+    <div class="arch-diagram">Pour chaque pixel (w, h) de l'image :
+│
+├── 1. LANCER DE RAYON
+│       u = w / (maxX - 1)         ← coordonnée normalisée
+│       v = h / (maxY - 1)
+│       ray = camera.thorwRay(u, v)
+│
+├── 2. DÉTECTION D'INTERSECTION
+│       closest = nullopt
+│       Pour chaque primitive de la scène :
+│           hit = primitive.intersect(ray, tMin=1e-2, ∞)
+│           Si hit &amp;&amp; hit.t &lt; closestT → closest = hit
+│
+├── 3. CALCUL D'ÉCLAIRAGE
+│       Si closest existe :
+│           surfaceColor = Color(hit._color)
+│           lit = computeLighting(hit, surfaceColor, scene)
+│                    ├── AmbientLight contributions
+│                    ├── DirectionalLight (Lambert)
+│                    └── PointLight (Lambert + atténuation)
+│           pixel = lit.clamped01()
+│
+└── 4. ÉCRITURE PIXEL
+        frameBuffer.setPixel(w, h, pixel * 255)
+
+Après tous les pixels :
+    output.render(frameBuffer)  →  fichier .ppm / texture SFML</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>Renderer (CLI)</th><th>SfmlOutput (GUI)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Progression</strong></td>
+            <td>Boucle complète, une passe</td>
+            <td>Une ligne par frame (progressif)</td>
+          </tr>
+          <tr>
+            <td><strong>Sortie</strong></td>
+            <td><code>_outputs[0]→render(buf)</code></td>
+            <td>Texture SFML temps réel + export PPM optionnel</td>
+          </tr>
+          <tr>
+            <td><strong>Résolution</strong></td>
+            <td>Configurable via <code>Dimensions</code></td>
+            <td>Fixée à 800×800</td>
+          </tr>
+          <tr>
+            <td><strong>Interactivité</strong></td>
+            <td>Aucune</td>
+            <td>Scroll, sélection de scènes, boutons</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>RayTracer · G-OOP-400-COT-4-1 · Epitech 2026 · <span>C++17</span></p>
+  </footer>
+
+</main>
+
+<script>
+  // Active nav item on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

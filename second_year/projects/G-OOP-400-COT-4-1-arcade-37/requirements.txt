@@ -1,0 +1,16 @@
+cmake
+make
+g++
+libncurses5-dev
+libsdl2-dev
+libsdl2-ttf-dev
+libsdl2-image-dev
+libsdl2-mixer-dev
+libsfml-dev
+liballegro5-dev
+liballegro-font5-dev
+liballegro-ttf5-dev
+liballegro-primitives5-dev
+liballegro-audio5-dev
+
+

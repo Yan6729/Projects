@@ -1,0 +1,82 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.login-page {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    background: #6d99d3;
+    color: #1a1d26;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+}
+
+.login-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 420px;
+    width: 100%;
+    max-height: 600px;
+    height: 500px;
+    padding: 2rem;
+    background: linear-gradient(to right, rgb(117, 117, 175), rgb(64, 67, 204));
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    color: #1a1d26;
+}
+
+.login-wrap h1 {
+    margin-left: 50px;
+    color: #12151c;
+    margin-bottom: 0.5rem;
+}
+
+.login-hint {
+    color: #00040a;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.45;
+    margin: 0.75rem 0 1rem;
+}
+
+.login-wrap label {
+    display: block;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2c3340;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.login-wrap input {
+    color: #1a1d26;
+    background: #b0bed1;
+    border-radius: 10px;
+    height: 40px;
+    width: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    font-size: larger;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.login-btn {
+    margin-top: 1.25rem;
+    background: linear-gradient(to bottom, #04021b, #1e4e8d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    height: 40px;
+    width: 80%;
+    margin-left: 35px;
+    cursor: pointer;
+}

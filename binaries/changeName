@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Vérification si les deux arguments sont présents
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 ancienne_extension nouvelle_extension"
+    echo "Exemple: $0 hpp cpp"
+    exit 1
+fi
+
+OLD_EXT=$1
+NEW_EXT=$2
+
+# Boucle sur les fichiers correspondants
+for f in *."$OLD_EXT"; do
+    # Vérifie si des fichiers existent pour éviter une erreur de boucle vide
+    [ -e "$f" ] || continue
+    
+    # Renommage
+    mv "$f" "${f%.$OLD_EXT}.$NEW_EXT"
+    echo "Renommé: $f -> ${f%.$OLD_EXT}.$NEW_EXT"
+done
+
+echo "Terminé !"

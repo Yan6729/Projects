@@ -1,0 +1,40 @@
+#!/bin/bash
+ 
+# Vérifier si $1 ou $2 sont vides
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Usage: push <push number (eg: 1, 2..> <name of the commit>"
+    exit 1
+fi
+ 
+# Si les arguments sont présents, exécuter le reste du script
+echo "Démarrage du nettoyage..."
+ 
+# Supprimer le fichier de log
+rm -f coding-style-reports.log
+ 
+# Nettoyage des artefacts de build
+make clean fclean
+ 
+# Supprimer les fichiers et répertoires inutiles
+rm -rf .vscode
+rm -f *.o
+rm -f a.out
+ 
+# Commit et push Git
+git add .
+git commit -m "n°$1: $2"
+if [ -z "$3" ]; then
+    git push
+else
+    git push origin "$3"
+fi    
+
+RESULT=$?
+
+if [ $RESULT -eq 0 ]; then
+   history -r
+   clear
+   echo "Your code was pushed successfully"
+else
+    echo "The push action failled"
+fi

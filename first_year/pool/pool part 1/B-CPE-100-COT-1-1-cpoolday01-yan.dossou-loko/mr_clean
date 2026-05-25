@@ -1,0 +1,1 @@
+find . \( -B-CPE-100-COT-1-1-cpoolday01-yan.dossou-loko -name '*.~' -o -name '#*# \) -type f - delete

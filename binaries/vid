@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Demander à l'utilisateur ce qu'il veut chercher
+read -p "🔍 Recherche vidéo : " query
+
+# Recherche vidéo sur plusieurs plateformes via yt-dlp
+# (tu peux en ajouter d'autres dans --no-check-certificate si nécessaire)
+yt-dlp "ytsearch10:$query" --get-id --get-title --get-url |
+    paste - - - |  # Format les résultats en trois colonnes : ID, titre, URL
+    fzf --preview="echo {}" |  # Interface interactive avec fzf
+    cut -d ' ' -f3 |  # On récupère seulement l'URL de la vidéo
+    xargs -I{} mpv {}  # Lancer la vidéo avec mpv

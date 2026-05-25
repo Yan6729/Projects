@@ -1,0 +1,80 @@
+# create the calcultaor circuit
+
+.chipsets:
+input a1
+input b1
+input a2
+input b2
+input a3
+input b3
+input a4
+input b4
+input a5
+input b5
+input a6
+input b6
+input a7
+input b7
+input a8
+input b8
+true c
+not invert1
+not invert2
+not invert3
+not invert4
+not invert5
+not invert6
+not invert7
+not invert8
+
+4008 _lowAdder
+4008 _highAdder
+
+output s1
+output s2
+output s3
+output s4
+output s5
+output s6
+output s7
+output s8
+output cout
+
+.links:
+b1:1 invert1:1
+b2:1 invert2:1
+b3:1 invert3:1
+b4:1 invert4:1
+b5:1 invert5:1
+b6:1 invert6:1
+b7:1 invert7:1
+b8:1 invert8:1
+a1:1 _lowAdder:7
+invert1:2 _lowAdder:6
+a2:1 _lowAdder:5
+invert2:2 _lowAdder:4
+a3:1 _lowAdder:3
+invert3:2 _lowAdder:2
+a4:1 _lowAdder:1
+invert4:2 _lowAdder:15
+c:1 _lowAdder:9
+
+a5:1 _highAdder:7
+invert5:2 _highAdder:6
+a6:1 _highAdder:5
+invert6:2 _highAdder:4
+a7:1 _highAdder:3
+invert7:2 _highAdder:2
+a8:1 _highAdder:1
+invert8:2 _highAdder:15
+_lowAdder:14 _highAdder:9
+
+_lowAdder:10 s1:1
+_lowAdder:11 s2:1
+_lowAdder:12 s3:1
+_lowAdder:13 s4:1
+_highAdder:10 s5:1
+_highAdder:11 s6:1
+_highAdder:12 s7:1
+_highAdder:13 s8:1
+_highAdder:14 cout:1

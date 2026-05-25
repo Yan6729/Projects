@@ -1,0 +1,16 @@
+Bugs founds:
+    - the spy logo was missing
+    - the spy theme was using minecraft.png assets instead of spy.png assets
+    - the gameData was using non existing assets to create some memory_card(spy_memory.png, ...)
+    - Pokemon logo was taking too much place and the users can't even play
+    - The bugs report overlay doesn't have a close button
+    - The bugs report button wasn't at a position where the user can see it
+
+
+Correction:
+    - Download a spy_logo.png to correct the bug
+    - url('assets/themes/minecraft.png') -> url('assets/themes/spy.png')
+    - Create spy_memorycard.png, and all the other ones, and rename them from '.jpg' extension to '.png'
+    - Resize the Pokemon logo so it'll take as mush place as the mincraft logo
+    - Add a close button by importing X from lucid-react and a Bug object too to make it more beautifull
+    - Change the bottom position of the button 24px -> 100px

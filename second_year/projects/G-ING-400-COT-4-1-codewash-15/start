@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+echo 'Lets install all the package for your project';
+npm install;
+
+echo "
+
+
+-----------------------------------------------------
+Now that it's done, let's lauch the project";
+npm run dev

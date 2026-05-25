@@ -1,0 +1,22 @@
+[package]
+name = "my-teams"
+version = "0.1.0"
+authors = ["michou"]
+edition = "2021"
+
+[dependencies]
+dioxus = { version = "0.7.1", features = [] }
+gloo-net = { version = "0.6", features = ["websocket"] }
+gloo-timers = { version = "0.3", features = ["futures"] }
+futures = "0.3"
+wasm-bindgen-futures = "0.4"
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement"]
+
+[features]
+default = ["web"]
+web = ["dioxus/web", "dioxus/router"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]

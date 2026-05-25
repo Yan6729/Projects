@@ -1,0 +1,5 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+Supervised/G1020/

@@ -1,0 +1,531 @@
+!<arch>
+//                                              208       `
+my_compute_power_rec.c/
+my_compute_square_root.c/
+my_find_prime_sup.c/
+my_put_nbr_base.c/
+my_sort_int_array.c/
+my_str_isalpha.c/
+my_str_islower.c/
+my_str_isprintable.c/
+my_str_isupper.c/
+my_strcapitalize.c/
+
+/0              0           0     0     644     421       `
+/*
+** EPITECH PROJECT, 2024
+** my_compute_power_it.c
+** File description:
+** my_compute_power_it.c
+*/
+
+#include <stdio.h>
+#include <unistd.h>
+#include "../../include/my.h"
+int my_compute_power_rec(int nb, int p)
+{
+    int carré;
+
+    if (p < 0) {
+        return (0);
+    }
+    if (p == 0) {
+        return (1);
+    }
+    while (p > 0) {
+        carré = nb * my_compute_power_rec(nb, p -1);
+    }
+    return (carré);
+}
+
+/24             0           0     0     644     327       `
+/*
+** EPITECH PROJECT, 2024
+** my_compute_square_root.c
+** File description:
+** my_compute_square_root.c
+*/
+#include <stdio.h>
+#include <unistd.h>
+#include "../../include/my.h"
+int my_compute_square_root(int nb)
+{
+    if (nb <= 0) {
+        return (0);
+    }
+    if (nb > 0) {
+        nb = nb / 2;
+        return (nb);
+    }
+}
+
+/50             0           0     0     644     179       `
+/*
+** EPITECH PROJECT, 2024
+** my_find_prime_sup.c
+** File description:
+** my_find_prime_sup.c
+*/
+#include "../../include/my.h"
+int my_find_prime_sup(int nb)
+{
+    return (nb);
+}
+
+my_getnbr.c/    0           0     0     644     184       `
+/*
+** EPITECH PROJECT, 2024
+** my_getnbr.c
+** File description:
+** my_getnbr.c
+*/
+#include "../../include/my.h"
+int my_getnbr_base(char const *str, char const *base)
+{
+    return 0;
+}
+my_is_prime.c/  0           0     0     644     309       `
+/*
+** EPITECH PROJECT, 2024
+** my_is_prime.c
+** File description:
+** my_is_prime.c
+*/
+#include <stdio.h>
+#include <unistd.h>
+#include "../../include/my.h"
+int my_is_prime(int nb)
+{
+    int a;
+
+    if (nb % a == 0) {
+        return (0);
+    }
+    if (nb % a != 0 || nb % nb == 0) {
+        return (1);
+    }
+}
+
+my_isneg.c/     0           0     0     644     300       `
+/*
+** EPITECH PROJECT, 2024
+** my_isneg.c
+** File description:
+** my_isneg.c
+*/
+#include "../../include/my.h"
+#include <stdio.h>
+int my_isneg(int vawulence)
+{
+    if (vawulence < '0') {
+        return ('N');
+    }
+    return 0;
+    if (vawulence >= '0') {
+        return ('P');
+    }
+    return 0;
+}
+my_put_nbr.c/   0           0     0     644     369       `
+/*
+** EPITECH PROJECT, 2024
+** my_put_nbr.c
+** File description:
+** my_put_nbr.c
+*/
+
+#include "../../include/my.h"
+
+int my_put_nbr(int nbr)
+{
+    if (nbr >= 0 && nbr < 10) {
+        my_putchar(nbr + '0');
+    } else if (nbr < 0) {
+        my_putchar('-');
+        my_put_nbr(nbr * (-1));
+    } else {
+        my_put_nbr(nbr / 10);
+        my_put_nbr(nbr % 10);
+    }
+}
+
+/71             0           0     0     644     165       `
+/*
+** EPITECH PROJECT, 2024
+** my_putnbr_base.c
+** File description:
+** my_putnbr_base.c
+*/
+#include "../../include/my.h"
+int my_put_nbr(int nb)
+{
+    return (0);
+}
+
+my_putchar.c/   0           0     0     644     183       `
+/*
+** EPITECH PROJECT, 2024
+** my_putchar.c
+** File description:
+** my_putchar.c
+*/
+#include "../../include/my.h"
+#include <unistd.h>
+void my_putchar(char c)
+{
+    write(1, &c, 1);
+}
+
+my_putstr.c/    0           0     0     644     257       `
+/*
+** EPITECH PROJECT, 2024
+** my_putstr.c
+** File description:
+** my_putstr.c
+*/
+#include <stdio.h>
+#include <unistd.h>
+#include "../../include/my.h"
+int my_putstr(char const *str)
+{
+    int a;
+
+    a = 0;
+    while (str[a] != '\0') {
+        a++;
+    }
+}
+
+my_revstr.c/    0           0     0     644     630       `
+/*
+** EPITECH PROJECT, 2024
+** my_revstr.c
+** File description:
+** my_revstr.c
+*/
+#include <string.h>
+#include <stdio.h>
+#include "../../include/my.h"
+int my_strlen(char *src)
+{
+    int a;
+
+    a = 0;
+    while (src[a] != '\0') {
+        a++;
+    }
+    return (a);
+}
+
+char *my_revstr(char *str)
+{
+    int len;
+    int i;
+    char *deb;
+    char *fin;
+    char inter;
+
+    len = my_strlen(str);
+    deb = str;
+    fin = str;
+    for (i = 0; i < len - 1; i++)
+        fin++;
+    for (i = 0; i < len / 2; i++) {
+        inter = *fin;
+        *fin = *deb;
+        *deb = inter;
+        deb++;
+        fin--;
+    }
+    return (str);
+}
+my_showmem.c/   0           0     0     644     174       `
+/*
+** EPITECH PROJECT, 2024
+** my_showmem.c
+** File description:
+** my_showmem.c
+*/
+#include "../../include/my.h"
+int my_showmem(char const *str, int size)
+{
+    return 0;
+}
+my_showstr.c/   0           0     0     644     164       `
+/*
+** EPITECH PROJECT, 2024
+** my_showstr.c
+** File description:
+** my_showstr.c
+*/
+#include "../../include/my.h"
+int my_showstr(char const *str)
+{
+    return 0;
+}
+/90             0           0     0     644     175       `
+/*
+** EPITECH PROJECT, 2024
+** my_sort_int_array.c
+** File description:
+** my_sort_int_array.c
+*/
+#include "../../include/my.h"
+void my_sort_int_array(int *tab, int size)
+{
+}
+
+/111            0           0     0     644     176       `
+/*
+** EPITECH PROJECT, 2024
+** my_str_isalpha.c
+** File description:
+** my_str_isalpha.c
+*/
+#include "../../include/my.h"
+int my_str_isalpha(char const *str)
+{
+    return 1;
+}
+/129            0           0     0     644     176       `
+/*
+** EPITECH PROJECT, 2024
+** my_str_islower.c
+** File description:
+** my_str_islower.c
+*/
+#include "../../include/my.h"
+int my_str_islower(char const *str)
+{
+    return 0;
+}
+my_str_isnum.c/ 0           0     0     644     170       `
+/*
+** EPITECH PROJECT, 2024
+** my_str_isnum.c
+** File description:
+** my_str_isnum.c
+*/
+#include "../../include/my.h"
+int my_str_isnum(char const *str)
+{
+    return 0;
+}
+/147            0           0     0     644     190       `
+/*
+** EPITECH PROJECT, 2024
+** my_str_isprintable.c
+** File description:
+** my_str_isprintable.c
+*/
+#include "../../include/my.h"
+int my_str_isprintable(char const *str)
+{
+    return (1);
+}
+/169            0           0     0     644     178       `
+/*
+** EPITECH PROJECT, 2024
+** my_str_isupper.c
+** File description:
+** my_str_isupper.c
+*/
+#include "../../include/my.h"
+int my_str_isupper(char const *str)
+{
+    return (1);
+}
+/187            0           0     0     644     182       `
+/*
+** EPITECH PROJECT, 2024
+** my_strcapitalize.c
+** File description:
+** my_strcapitalize.c
+*/
+#include "../../include/my.h"
+char *my_strcapitalize(char *str)
+{
+    return (str);
+}
+my_strcat.c/    0           0     0     644     175       `
+/*
+** EPITECH PROJECT, 2024
+** my_strcat.c
+** File description:
+** my_strcat.c
+*/
+#include "../../include/my.h"
+char *my_strcat(char *dest, char const *src)
+{
+    return 0;
+}
+
+my_strcmp.c/    0           0     0     644     176       `
+/*
+** EPITECH PROJECT, 2024
+** my_strcmp.c
+** File description:
+** my_strcmp.c
+*/
+#include "../../include/my.h"
+int my_strcmp(char const *s1, char const *s2)
+{
+    return 0;
+}
+my_strcpy.c/    0           0     0     644     316       `
+/*
+** EPITECH PROJECT, 2024
+** my_strcpy.c
+** File description:
+** my_strcpy.c
+*/
+#include <stdio.h>
+#include "../../include/my.h"
+char *my_strcpy(char *dest, char const *src)
+{
+    int a;
+
+    a = 0;
+    while (src[a] != '\0') {
+        dest[a] = src[a];
+        a++;
+    }
+    dest[a] = '\0';
+    return (dest);
+}
+my_strlen.c/    0           0     0     644     227       `
+/*
+** EPITECH PROJECT, 2024
+** my_strlen.c
+** File description:
+** my_strlen.c
+*/
+#include "../../include/my.h"
+int my_strlen(char const *str)
+{
+    int a = 0;
+
+    while (str[a] != '\0') {
+        a++;
+    }
+    return (a);
+}
+
+my_strlowcase.c/0           0     0     644     173       `
+/*
+** EPITECH PROJECT, 2024
+** my_strlowcase.c
+** File description:
+** my_strlowcase.c
+*/
+#include "../../include/my.h"
+char *my_strlowcaze(char *str)
+{
+    return (str);
+}
+
+my_strncat.c/   0           0     0     644     186       `
+/*
+** EPITECH PROJECT, 2024
+** my_strncat.c
+** File description:
+** my_strncat.c
+*/
+#include "../../include/my.h"
+char *my_strncat(char *dest, char const *src, int nb)
+{
+    return 0;
+}
+my_strncmp.c/   0           0     0     644     186       `
+/*
+** EPITECH PROJECT, 2024
+** my_strncmp.c
+** File description:
+** my_strncmp.c
+*/
+#include "../../include/my.h"
+int my_strncmp(char const *s1, char const *s2, int n)
+{
+    return 0;
+}
+my_strncpy.c/   0           0     0     644     496       `
+/*
+** EPITECH PROJECT, 2024
+** my_strncpy.c
+** File description:
+** my_strncpy.c
+*/
+#include "../../include/my.h"
+#include <stdio.h>
+int my_strlen(char const *str)
+{
+    int b = 0;
+
+    while (str[b] != '\0') {
+        b++;
+    }
+    return (b);
+}
+
+char *my_strncpy(char *dest, char const *src, int n)
+{
+    int i = 0;
+    int b = my_strlen(src);
+
+    for (i = 0; src[i] != '\0' && i < n; i++) {
+        dest[i] = src[i];
+    }
+    if (n > b) {
+        dest[b] = '\0';
+    }
+    return (dest);
+}
+my_strstr.c/    0           0     0     644     311       `
+/*
+** EPITECH PROJECT, 2024
+** my_strstr.c
+** File description:
+** my_strstr.c
+*/
+#include "../../include/my.h"
+char *my_strstr(char *str, char const *to_find)
+{
+    int a;
+    int b;
+
+    for (a = 0; str[a] != '\0'; a++) {
+        for (b = 0; to_find[b] == str[a + b]; b++) {
+        }
+    }
+    return (0);
+}
+
+my_strupcase.c/ 0           0     0     644     170       `
+/*
+** EPITECH PROJECT, 2024
+** my_strupcase.c
+** File description:
+** my_strupcase.c
+*/
+#include "../../include/my.h"
+char *my_strupcase(char *str)
+{
+    return (str);
+}
+my_swap.c/      0           0     0     644     222       `
+/*
+** EPITECH PROJECT, 2024
+** my_swap.c
+** File description:
+** my_swap.c
+*/
+#include <stdio.h>
+#include <unistd.h>
+#include "../../include/my.h"
+void my_swap(int *a, int *b)
+{
+    int c = *a;
+
+    *a = *b;
+    *b = c;
+}

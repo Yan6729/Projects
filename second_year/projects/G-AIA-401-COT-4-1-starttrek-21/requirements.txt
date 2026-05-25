@@ -1,0 +1,10 @@
+gymnasium[box2d]
+torch
+torchvision
+torchaudio
+pyyaml
+moviepy
+matplotlib
+pandas
+numpy
+swig

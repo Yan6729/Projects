@@ -1,0 +1,21 @@
+env:
+  name: "LunarLander-v3"
+  render_mode: "rgb_array"
+
+run:
+  n_episodes: 500
+  seed: 0
+
+agent:
+  type: "dqn"
+  learning_rate: 0.001
+  gamma: 0.99
+  batch_size: 64
+  buffer_size: 100000
+  tau: 0.001
+  target_update: "soft"
+  update_freq: 100
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.995
+  hidden_sizes: [256, 128, 64]
