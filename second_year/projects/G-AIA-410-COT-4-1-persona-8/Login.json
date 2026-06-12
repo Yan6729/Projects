@@ -1,0 +1,363 @@
+{
+  "name": "Login",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "username"
+            },
+            {
+              "name": "password"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "username",
+              "value": "={{ $json.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        352
+      ],
+      "id": "fd8947c1-ec51-47ca-a369-f567d3047d2f",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "hdp80daQHiKSjXlT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2f21656b-ad56-408f-be71-1e4fd917738d",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        352
+      ],
+      "id": "8d786be7-5076-495a-b2e2-f3a2d52f1428",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const triggerData = $('When Executed by Another Workflow').first().json;\nconst password = triggerData.password;\nconst username = triggerData.username;\n\nlet hash = 0;\nfor (let i = 0; i < password.length; i++) {\n  const char = password.charCodeAt(i);\n  hash = ((hash << 5) - hash) + char;\n  hash = hash & hash;\n}\nconst hashedPassword = Math.abs(hash).toString(16);\n\nconst isMatch = hashedPassword === hashedPassword;\n\nreturn [{\n  json: {\n    success: isMatch,\n    username: username,\n    userId: $('Select rows from a table').first().json.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "04fee705-bf8b-4b5c-912b-9613baf4caa5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "de97cd6f-4427-4cbf-bb9f-8c75d642dcf7",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        192
+      ],
+      "id": "6ffe5b8c-beda-4cb7-8781-f0689f846983",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OQ9HBg7dHbjbkSkq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OQ9HBg7dHbjbkSkq",
+          "cachedResultName": "create_session"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userId": "={{ $json.userId }}"
+          },
+          "matchingColumns": [
+            "userId"
+          ],
+          "schema": [
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        48
+      ],
+      "id": "a2ab7b62-95d3-4bbc-b38c-591611b72e00",
+      "name": "Call 'create_session'"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"success\": false, \n  \"reason\": \"You're not registered yet\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        464
+      ],
+      "id": "1707c5a3-92bb-4b3c-ac2e-b14f81f12117",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"success\": false,\n  \"reason\": \"Wrong password\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        304
+      ],
+      "id": "5fdb70b1-7640-4348-8880-320c85bfe62e",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9b14860-d2e0-4f9e-864b-31cc68df2292",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "0789e975-4415-45ba-9b6f-b1b101b20c44",
+              "name": "username",
+              "value": "={{ $('Select rows from a table').first().json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "36e4bc27-49a8-4e6c-8ce5-34e24e8d345f",
+              "name": "token",
+              "value": "={{ $json.token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1648,
+        48
+      ],
+      "id": "f2a3f646-8572-4b81-8e2c-281d8e305da4",
+      "name": "Edit Fields2"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "username": "Romzi",
+          "password": "Just to do a test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Call 'create_session'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'create_session'": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b1f046bd-26d2-47e4-98b2-0f3c54bcd607",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ca64be11eacf931fdc58eea5eadbb29716cf0ef8eaf64d268675758115bebef"
+  },
+  "nodeGroups": [],
+  "id": "agQotehvtPfAUNqZ",
+  "tags": []
+}

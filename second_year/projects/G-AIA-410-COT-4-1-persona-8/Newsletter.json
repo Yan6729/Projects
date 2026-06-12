@@ -1,0 +1,455 @@
+{
+  "name": "Newsletter",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        64
+      ],
+      "id": "fb384177-b6d6-4666-b086-9a13ad659a37",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        304,
+        912
+      ],
+      "id": "c8ee7619-de94-4bff-b432-e8a95d0ee1ec",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "hdp80daQHiKSjXlT",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 7
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "8bc9efa2-2ff1-4606-a126-a40d2e22739b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a newsletter curator for {{ $json.user.username }}.\n\nTheir topics of interest: {{ $json.user.topics }}\n\nHere are all available articles:\n{{ $json.articles.map(a => a.title + ' - ' + a.link + '\\n' + (a.contentSnippet || '')).join('\\n\\n') }}\n\nSelect the 5 most relevant articles for this user based on their topics. Be sure that your 5 most relevant articles have something to do withtheir topics. If they're not keep going.\nWrite a clean HTML newsletter with a title, a short summary for each article, and a clickable link. If the user have horoscope things in his topics you can send him 10 articles tho, only the most relevants ones.\nKeep it engaging and personalized.\nReturn ONLY the HTML code, no markdown, no backticks, no explanation.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1792,
+        -112
+      ],
+      "id": "f1fdaf2a-2110-404c-a2ae-f763f10cc290",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        272
+      ],
+      "id": "0ad7319f-b4a2-4a86-8518-e9488feabc24",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DGcAMcXJ2omB3qv0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst currentHour = now.getHours();\nconst currentMinute = now.getMinutes();\n\nconst users = $('Select rows from a table').all().filter(item => {\n  const schedule = item.json.schedule;\n  if (!schedule) return false;\n  const [h, m] = schedule.split(':').map(Number);\n  return currentHour === h && currentMinute === m;\n});\n\nconst articles = $('Merge').all();\n\nreturn users.map(user => ({\n  json: {\n    user: user.json,\n    articles: articles.map(a => a.json),\n    email: user.json.email\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -112
+      ],
+      "id": "efb69da7-a5d2-4930-a68e-1b50521b384f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://www.ccmmagazine.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -32
+      ],
+      "id": "40b8dd01-ffa6-4236-b20e-5dc4df9b5f91",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "url": "http://rss.cnn.com/rss/edition.rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -368
+      ],
+      "id": "c54d4461-901a-4228-892b-1a4e401b9a60",
+      "name": " RSS news"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -208
+      ],
+      "id": "620d0cd2-2843-4f52-ae27-369d7da1948e",
+      "name": "BBC news"
+    },
+    {
+      "parameters": {
+        "url": "https://www.reddit.com/r/DarkRomance/.rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        144
+      ],
+      "id": "643487ee-1329-49c4-9b95-cba51249a3e8",
+      "name": "Dark romance news"
+    },
+    {
+      "parameters": {
+        "url": "https://www.animenewsnetwork.com/all/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        320
+      ],
+      "id": "d77e2a2e-5d2b-4ccc-b176-61bdce000236",
+      "name": "Anime news"
+    },
+    {
+      "parameters": {
+        "url": "https://www.allaboutromance.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        480
+      ],
+      "id": "f3a21fb4-ccac-48c7-9152-6a5a32c329d2",
+      "name": "Romance news"
+    },
+    {
+      "parameters": {
+        "fromEmail": "michoudsk@gmail.com",
+        "toEmail": "={{ $('Code in JavaScript').item.json.email }}",
+        "subject": "=Newsletter Persona - {{ new Date().toLocaleDateString() }}",
+        "html": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2496,
+        48
+      ],
+      "id": "c5214492-08fb-4947-9778-031f5fc2fed6",
+      "name": "Send an Email",
+      "webhookId": "f6a82719-79c2-4888-8fbb-32002852ba71",
+      "credentials": {
+        "smtp": {
+          "id": "73p36UQP2faYeRB8",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        976,
+        288
+      ],
+      "id": "df66b9da-cfdd-46f0-b086-c454ad3c95be",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "url": "https://cafeastrology.com/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        624
+      ],
+      "id": "6165db48-0203-47c4-8c9f-467f535e46d3",
+      "name": "Romance news1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "BBC news",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": " RSS news",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dark romance news",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Anime news",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Romance news",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Romance news1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    " RSS news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BBC news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Dark romance news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Anime news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Romance news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Romance news1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "965f32bb-beb8-40ca-9ec5-14f15899c557",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8ca64be11eacf931fdc58eea5eadbb29716cf0ef8eaf64d268675758115bebef"
+  },
+  "nodeGroups": [],
+  "id": "771dB9kJCVlyVVQP",
+  "tags": []
+}
